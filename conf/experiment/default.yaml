@@ -1,0 +1,3 @@
+_target_: pymc_mlflow.DataModels.ExperimentModel
+name: pymc-mlflow
+tracking_uri: http://localhost:5000

@@ -1,0 +1,108 @@
+version: "3.9"
+
+services:
+
+  mlflow:
+    image: $GITHUB_CONTAINER_REPO
+    container_name: ${PROJECT_NAME}-mlflow
+    hostname: mlflow
+    restart: always
+    stop_grace_period: 10s
+    build: 
+      context: .
+      args:
+        PYTHON_TAG: $PYTHON_TAG
+    environment:
+      MLFLOW_BACKEND_STORE_URI: $MLFLOW_BACKEND_STORE_URI
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      AWS_ACCESS_KEY_ID: $DB_USER
+      AWS_SECRET_ACCESS_KEY: $DB_PASSWORD
+      BENTOML_HOME: $BENTOML_HOME 
+      BENTOML_DO_NOT_TRACK: "True"
+      BENTOML_CONFIG: $BENTOML_CONFIG
+      BENTOML_BUCKET: s3://bento
+    ports:
+      - 5000:5000
+      - 3001:3000
+    volumes:
+      - mlflow-prometheus-data:/prometheus
+      - ./pymc_mlflow:/workspace/mlflow_bentoml:rwx
+      - ./conf:/workspace/conf:rwx
+      - ./models:/workspace/models:rwx
+      - ./bentoml_configuration.yaml:${BENTOML_CONFIG}:rwx
+      - ./bento:${BENTOML_HOME}
+    command: >
+      mlflow server --serve-artifacts --host 0.0.0.0 --port 5000  
+      --backend-store-uri "${MLFLOW_BACKEND_STORE_URI}" 
+      --default-artifact-root s3://mlflow/ --expose-prometheus /prometheus
+
+  minio:
+    image: minio/minio:${MINIO_TAG}
+    container_name: ${PROJECT_NAME}-minio
+    hostname: minio
+    restart: always
+    stop_grace_period: 10s
+    working_dir: /data
+    volumes:
+      - minio-data:/data
+    ports:
+      - 9000:9000
+      - 9001:9001
+    environment:
+      MINIO_ACCESS_KEY: $DB_USER
+      MINIO_SECRET_KEY: $DB_PASSWORD
+      MINIO_ROOT_USER: $DB_USER
+      MINIO_ROOT_PASSWORD: $DB_PASSWORD
+      MINIO_STORAGE_USE_HTTPS: "False"
+      MINIO_PROMETHEUS_AUTH_TYPE: public
+    command: server --console-address ':9001' --address ':9000' /data 
+
+  mc:
+    image: minio/mc:${MINIO_MC_TAG}
+    container_name: ${PROJECT_NAME}-mc
+    hostname: mc
+    environment:
+      MINIO_PORT: 9000
+      MINIO_ACCESS_KEY: $DB_USER
+      MINIO_SECRET_KEY: $DB_PASSWORD
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c ' sleep 5;  /usr/bin/mc config host add s3  http://minio:9000 ${DB_USER} ${DB_PASSWORD} --api S3v4;   
+      [[ ! -z "`/usr/bin/mc ls s3 | grep challenge`" ]] || /usr/bin/mc mb s3/mlflow;  /usr/bin/mc policy download s3/mlflow;   
+      [[ ! -z "`/usr/bin/mc ls s3 | grep challenge`" ]] || /usr/bin/mc mb s3/bento;  /usr/bin/mc policy download s3/bento;   
+      [[ ! -z "`/usr/bin/mc ls s3 | grep challenge`" ]] || /usr/bin/mc mb s3/data;  /usr/bin/mc policy download s3/data; exit 0; '
+
+  postgres:
+    image: postgres:${POSTGRES_TAG}
+    container_name: ${PROJECT_NAME}-postgres
+    hostname: postgres
+    restart: always
+    stop_grace_period: 10s
+    environment:
+      POSTGRES_PASSWORD: $DB_PASSWORD
+      POSTGRES_DB: $DB_NAME
+      POSTGRES_USER: $DB_USER
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer:${ADMINER_TAG}
+    container_name: ${PROJECT_NAME}-adminer
+    hostname: adminer
+    restart: always
+    stop_grace_period: 10s
+    ports:
+      - 8080:8080
+
+networks:
+  default:
+    name: $PROJECT_NAME
+    driver: bridge
+
+volumes:
+  postgres-data: {}
+  minio-data: {}
+  mlflow-prometheus-data: {}
