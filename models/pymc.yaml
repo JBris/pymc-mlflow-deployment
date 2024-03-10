@@ -1,4 +1,4 @@
-service: "pymc_mlflow.pymc_mlflow_service:svc"   
+service: "pymc_mlflow.2_deploy_model:svc"   
 labels:
    owner: bentoml-team
    stage: dev

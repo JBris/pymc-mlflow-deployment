@@ -26,10 +26,10 @@ services:
       - 3001:3000
     volumes:
       - mlflow-prometheus-data:/prometheus
-      - ./pymc_mlflow:/workspace/mlflow_bentoml:rwx
-      - ./conf:/workspace/conf:rwx
-      - ./models:/workspace/models:rwx
-      - ./bentoml_configuration.yaml:${BENTOML_CONFIG}:rwx
+      - ./pymc_mlflow:/workspace/pymc_mlflow:rwx
+      - ./conf:/workspace/conf:rw
+      - ./models:/workspace/models:rw
+      - ./bentoml_configuration.yaml:${BENTOML_CONFIG}:rw
       - ./bento:${BENTOML_HOME}
     command: >
       mlflow server --serve-artifacts --host 0.0.0.0 --port 5000  

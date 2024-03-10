@@ -2718,6 +2718,31 @@ scipy = ">=1.4.1"
 typing-extensions = ">=3.7.4"
 
 [[package]]
+name = "pymc-experimental"
+version = "0.0.17"
+description = "A home for new additions to PyMC, which may include unusual probability distribitions, advanced model fitting algorithms, or any code that may be inappropriate to include in the pymc repository, but may want to be made available to users."
+optional = false
+python-versions = ">=3.8"
+files = []
+develop = false
+
+[package.dependencies]
+pymc = ">=5.10.0"
+scikit-learn = "*"
+
+[package.extras]
+complete = ["dask[complete]", "xhistogram"]
+dask-histogram = ["dask[complete]", "xhistogram"]
+dev = ["blackjax", "dask[all]", "statsmodels"]
+histogram = ["xhistogram"]
+
+[package.source]
+type = "git"
+url = "https://github.com/pymc-devs/pymc-experimental.git"
+reference = "HEAD"
+resolved_reference = "47c4b489dbfda419c258701562a795d1d6409184"
+
+[[package]]
 name = "pyparsing"
 version = "3.1.2"
 description = "pyparsing module - Classes and methods to define and execute parsing grammars"
@@ -3882,4 +3907,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "1542306f2ef28113737663c17549941a7535b9c5f5ac32abd071d73f8f7534f1"
+content-hash = "e41b7ecc1069ba61ff5174d148b0a63eb323379322b73a4056ea90635359e5cb"

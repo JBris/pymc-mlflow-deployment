@@ -1,2 +1,3 @@
-# pymc-mlflow
-Testing model deployment of PyMC models using MLFlow
+# PyMC MLFlow
+
+Testing deployment of PyMC models using MLFlow.
