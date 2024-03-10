@@ -11,4 +11,4 @@ python:
    - mlflow
    - pymc
 models:  
-- linear_reg:latest
+- bayes_reg:latest
